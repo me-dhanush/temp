@@ -2,66 +2,94 @@
 
 import React, { useEffect, useRef, useState } from "react";
 
-export default function TournamentBracket() {
+type MatchType = {
+  id: string;
+  p1: string;
+  p2: string;
+};
+
+type RoundType = {
+  id: string;
+  matches: MatchType[];
+};
+
+interface TournamentBracketProps {
+  rounds?: RoundType[];
+}
+
+export default function TournamentBracket({
+  rounds = [],
+}: TournamentBracketProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const qf1 = useRef<HTMLDivElement>(null);
-  const qf2 = useRef<HTMLDivElement>(null);
-  const qf3 = useRef<HTMLDivElement>(null);
-  const qf4 = useRef<HTMLDivElement>(null);
+  // One central ref map
+  const matchRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const sf1 = useRef<HTMLDivElement>(null);
-  const sf2 = useRef<HTMLDivElement>(null);
-
-  const finalRef = useRef<HTMLDivElement>(null);
-
+  if (!rounds.length) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-400">
+        No matches available
+      </div>
+    );
+  }
   return (
-    <div className="min-h-screen  flex items-center justify-center p-20 overflow-x-auto">
-      <div ref={containerRef} className="relative flex gap-32">
-        {/* Quarter Finals */}
-        <Round>
-          <Match ref={qf1} p1="Magnus Carlsen" p2="Hikaru Nakamura" />
-          <Match ref={qf2} p1="Fabiano Caruana" p2="Alireza Firouzja" />
-          <Match ref={qf3} p1="Ding Liren" p2="Ian Nepomniachtchi" />
-          <Match ref={qf4} p1="Anish Giri" p2="Levon Aronian" />
-        </Round>
-
-        {/* Semi Finals */}
-        <Round>
-          <Match ref={sf1} p1="Magnus Carlsen" p2="Fabiano Caruana" />
-          <Match ref={sf2} p1="Ding Liren" p2="Anish Giri" />
-        </Round>
-
-        {/* Final */}
-        <Round>
-          <FinalMatch ref={finalRef} p1="Magnus Carlsen" p2="Anish Giri" />
-        </Round>
+    <div className="min-h-screen flex items-center justify-center p-12 overflow-x-auto">
+      <div ref={containerRef} className="relative flex gap-24">
+        {/* ROUNDS */}
+        {rounds.map((round) => (
+          <Round key={round.id}>
+            {round.matches.map((match) => (
+              <Match
+                key={match.id}
+                ref={(el) => {
+                  matchRefs.current[match.id] = el;
+                }}
+                p1={match.p1}
+                p2={match.p2}
+              />
+            ))}
+          </Round>
+        ))}
 
         {/* CONNECTORS */}
-        <Connector
-          containerRef={containerRef}
-          fromTop={qf1}
-          fromBottom={qf2}
-          to={sf1}
-        />
-        <Connector
-          containerRef={containerRef}
-          fromTop={qf3}
-          fromBottom={qf4}
-          to={sf2}
-        />
-        <Connector
-          containerRef={containerRef}
-          fromTop={sf1}
-          fromBottom={sf2}
-          to={finalRef}
-          highlight
-        />
+        {rounds.map((round, roundIndex) => {
+          if (roundIndex === rounds.length - 1) return null;
+
+          const currentMatches = round.matches;
+          const nextMatches = rounds[roundIndex + 1].matches;
+
+          return currentMatches.map((match, matchIndex) => {
+            // Only draw connector for every 2 matches
+            if (matchIndex % 2 !== 0) return null;
+
+            const nextMatchIndex = Math.floor(matchIndex / 2);
+
+            function getRef(id: string): React.RefObject<HTMLDivElement> {
+              return {
+                get current() {
+                  return matchRefs.current[id] ?? null;
+                },
+              };
+            }
+
+            return (
+              <Connector
+                key={`connector-${roundIndex}-${matchIndex}`}
+                containerRef={containerRef}
+                fromTop={getRef(currentMatches[matchIndex].id)}
+                fromBottom={getRef(currentMatches[matchIndex + 1]?.id)}
+                to={getRef(nextMatches[nextMatchIndex].id)}
+                highlight={
+                  roundIndex === rounds.length - 2 && nextMatchIndex === 0
+                }
+              />
+            );
+          });
+        })}
       </div>
     </div>
   );
 }
-
 /* ----------------- ROUND ----------------- */
 
 function Round({
@@ -72,7 +100,7 @@ function Round({
   className?: string;
 }) {
   return (
-    <div className={`flex flex-col justify-around h-[650px] ${className}`}>
+    <div className={`flex flex-col justify-around gap-8 py-6 ${className}`}>
       {children}
     </div>
   );
@@ -95,16 +123,16 @@ const Match = React.forwardRef<
   return (
     <div
       ref={ref}
-      className="w-64 bg-white rounded-3xl border border-gray-200 shadow-md overflow-hidden"
+      className="w-56 bg-white rounded-2xl border border-gray-200 shadow-md overflow-hidden"
     >
       {/* Player 1 */}
       <div
-        className={`flex justify-between items-center px-5 py-4 transition-all ${
+        className={`flex justify-between items-center px-4 py-3 transition-all ${
           p1Winner ? "bg-emerald-100" : "bg-white"
         }`}
       >
         <span
-          className={`text-base ${
+          className={`text-sm ${
             p1Winner ? "text-emerald-700 font-semibold" : "text-gray-700"
           }`}
         >
@@ -127,12 +155,12 @@ const Match = React.forwardRef<
 
       {/* Player 2 */}
       <div
-        className={`flex justify-between items-center px-5 py-4 transition-all ${
+        className={`flex justify-between items-center px-4 py-3 transition-all ${
           p2Winner ? "bg-emerald-100" : "bg-white"
         }`}
       >
         <span
-          className={`text-base ${
+          className={`text-sm ${
             p2Winner ? "text-emerald-700 font-semibold" : "text-gray-700"
           }`}
         >
@@ -140,7 +168,7 @@ const Match = React.forwardRef<
         </span>
 
         <div
-          className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm font-bold transition-all ${
+          className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all ${
             p2Winner
               ? "bg-emerald-500 text-white scale-105"
               : "bg-gray-100 text-gray-500"
@@ -289,7 +317,7 @@ function Connector({
       const bottomY = bottom.top - containerRect.top + bottom.height / 2;
       const targetY = target.top - containerRect.top + target.height / 2;
 
-      const midX = startX + 40;
+      const midX = startX + 30;
       const midY = (topY + bottomY) / 2;
 
       setLines([

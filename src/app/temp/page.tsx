@@ -45,6 +45,7 @@ export default function Page() {
 
   const matches = generateRound1Matches(players);
 
+  console.log(matches);
   return (
     <div>
       <h1>Round 1 Matches</h1>
