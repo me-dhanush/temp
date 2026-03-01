@@ -20,7 +20,7 @@ export default function SVGBracket({ rounds }: Props) {
   const [hoveredMatch, setHoveredMatch] = useState<string | null>(null);
 
   const nodeWidth = 200;
-  const nodeHeight = 70;
+  const nodeHeight = 90;
   const horizontalGap = 260;
   const paddingX = 60;
   const paddingY = 60;
@@ -41,7 +41,7 @@ export default function SVGBracket({ rounds }: Props) {
               dx="0"
               dy="0"
               stdDeviation="4"
-              floodColor="#6366f1"
+              floodColor="#3b82f6" // blue-500 glow
               floodOpacity="0.9"
             />
           </filter>
@@ -64,26 +64,65 @@ export default function SVGBracket({ rounds }: Props) {
                 key={match.id}
                 onMouseEnter={() => setHoveredMatch(match.id)}
                 onMouseLeave={() => setHoveredMatch(null)}
-                style={{ cursor: "pointer" }}
+                className="cursor-pointer"
               >
+                {/* Player 1 Box */}
                 <rect
                   x={x}
                   y={y}
                   width={nodeWidth}
-                  height={nodeHeight}
-                  rx="14"
-                  fill="white"
-                  stroke={isHovered ? "#6366f1" : "#e5e7eb"}
+                  height={nodeHeight / 2 - 4}
+                  rx="6"
+                  className={`
+      transition-all duration-200
+      ${
+        isHovered
+          ? "fill-blue-700 dark:fill-blue-300"
+          : "fill-blue-950 dark:fill-blue-100"
+      }
+      stroke-blue-800 dark:stroke-blue-400
+    `}
                   strokeWidth={isHovered ? 2.5 : 1.5}
                   filter={isHovered ? "url(#glow)" : undefined}
-                  style={{ transition: "all 0.2s ease" }}
                 />
 
-                <text x={x + 14} y={y + 28} fontSize="14" fill="#374151">
+                {/* Player 2 Box */}
+                <rect
+                  x={x}
+                  y={y + nodeHeight / 2 + 4}
+                  width={nodeWidth}
+                  height={nodeHeight / 2 - 4}
+                  rx="6"
+                  className={`
+      transition-all duration-200
+      ${
+        isHovered
+          ? "fill-blue-700 dark:fill-blue-300"
+          : "fill-blue-950 dark:fill-blue-100"
+      }
+      stroke-blue-800 dark:stroke-blue-400
+    `}
+                  strokeWidth={isHovered ? 2.5 : 1.5}
+                  filter={isHovered ? "url(#glow)" : undefined}
+                />
+
+                {/* Player 1 Text */}
+                <text
+                  x={x + 14}
+                  y={y + 22}
+                  fontSize="14"
+                  className="fill-white dark:fill-blue-950"
+                >
                   {match.p1}
                 </text>
 
-                <text x={x + 14} y={y + 52} fontSize="14" fill="#374151">
+                {/* Player 2 Text */}
+                <text
+                  x={x + 14}
+                  y={y + nodeHeight / 2 + 26}
+                  fontSize="14"
+                  className="fill-white dark:fill-blue-950"
+                >
                   {match.p2}
                 </text>
               </g>
@@ -123,7 +162,6 @@ export default function SVGBracket({ rounds }: Props) {
               nodeHeight / 2;
 
             const midX = x1 + 30;
-
             const isHovered = hoveredMatch === match.id;
 
             return (
@@ -136,7 +174,7 @@ export default function SVGBracket({ rounds }: Props) {
                   H ${x2}
                 `}
                 fill="none"
-                stroke={isHovered ? "#6366f1" : "#3f3f46"}
+                stroke={isHovered ? "#3b82f6" : "#64748b"}
                 strokeWidth={isHovered ? 3 : 2}
                 filter={isHovered ? "url(#glow)" : undefined}
                 style={{ transition: "all 0.2s ease" }}
