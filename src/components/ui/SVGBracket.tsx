@@ -1,16 +1,6 @@
 "use client";
+import { RoundType } from "@/lib/pairing";
 import React, { useState } from "react";
-
-type MatchType = {
-  id: string;
-  p1: string;
-  p2: string;
-};
-
-type RoundType = {
-  id: string;
-  matches: MatchType[];
-};
 
 interface Props {
   rounds: RoundType[];
@@ -113,7 +103,16 @@ export default function SVGBracket({ rounds }: Props) {
                   fontSize="14"
                   className="fill-white dark:fill-blue-950"
                 >
-                  {match.p1}
+                  {match.players[0]?.name ?? "TBD"}
+                </text>
+                <text
+                  x={x + nodeWidth - 20}
+                  y={y + 22}
+                  fontSize="14"
+                  textAnchor="end"
+                  className="fill-white dark:fill-blue-950 font-semibold"
+                >
+                  {match.scores[0] ?? "-"}
                 </text>
 
                 {/* Player 2 Text */}
@@ -123,7 +122,16 @@ export default function SVGBracket({ rounds }: Props) {
                   fontSize="14"
                   className="fill-white dark:fill-blue-950"
                 >
-                  {match.p2}
+                  {match.players[1]?.name ?? "TBD"}
+                </text>
+                <text
+                  x={x + nodeWidth - 20}
+                  y={y + nodeHeight / 2 + 26}
+                  fontSize="14"
+                  textAnchor="end"
+                  className="fill-white dark:fill-blue-950 font-semibold"
+                >
+                  {match.scores[1] ?? "-"}
                 </text>
               </g>
             );
